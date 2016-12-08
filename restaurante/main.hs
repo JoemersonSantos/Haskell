@@ -43,6 +43,7 @@ mkYesod "Pagina" [parseRoutes|
 /prato/deletar/#PratoId           DeletarPrato OPTIONS DELETE
 /bebida/cadastrar                 CadastroBebidaR POST
 /bebida/mostrarTodos              MostrarBebidas OPTIONS GET
+/bebida/alterar/#BebidaId         AlterarBebida OPTIONS PUT 
 |]
 
 instance YesodPersist Pagina where
@@ -172,7 +173,21 @@ getMostrarBebidas :: Handler ()
 getMostrarBebidas = do
     addHeader "Access-Control-Allow-Origin" "*"
     bebida <- runDB $ selectList [] [Asc BebidaId]
-    sendResponse (object["bebidas: " .= fmap toJSON bebida])    
+    sendResponse (object["bebidas: " .= fmap toJSON bebida])
+
+optionsAlterarBebida :: BebidaId -> Handler ()
+optionsAlterarBebida cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "PUT, OPTIONS"
+    
+putAlterarBebida :: BebidaId -> Handler ()
+putAlterarBebida cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    bebida <- requireJsonBody :: Handler Bebida
+    runDB $ update cid [BebidaMarca =. (bebidaMarca bebida) ,
+                        BebidaLitros =. (bebidaLitros bebida),
+                        BebidaPreco =. (bebidaPreco bebida)]
+    sendResponse (object [pack "resp" .= pack "Changed"])    
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
