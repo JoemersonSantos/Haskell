@@ -48,7 +48,6 @@ share[mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
     |]
 
 
-
 mkYesod "Pagina" [parseRoutes|
 /cliente/cadastrar                CadastroCliente POST
 /cliente/mostrarTodos             MostrarClientes OPTIONS GET
@@ -71,6 +70,7 @@ mkYesod "Pagina" [parseRoutes|
 /entregador/alterar/#EntregadorId AlterarEntregador OPTIONS PUT
 /entregador/deletar/#EntregadorId DeletarEntregador OPTIONS DELETE
 /pedido/cadastrar                 CadastroPedidoR POST
+/pedido/mostrarTodos              MostrarPedido OPTIONS GET
 |]
 
 instance YesodPersist Pagina where
@@ -334,6 +334,17 @@ postCadastroPedidoR = do
     pedido <- requireJsonBody :: Handler Pedido
     runDB $ insert pedido
     sendResponse (object [pack "resp" .= pack "CREATED"])
+    
+optionsMostrarPedido :: Handler ()
+optionsMostrarPedido = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "GET, OPTIONS"
+    
+getMostrarPedido :: Handler ()
+getMostrarPedido = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    pedido <- runDB $ selectList [] [Asc PedidoId]
+    sendResponse (object["pedido: " .= fmap toJSON pedido])    
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
