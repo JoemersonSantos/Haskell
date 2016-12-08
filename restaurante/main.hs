@@ -34,6 +34,7 @@ mkYesod "Pagina" [parseRoutes|
 /prato/cadastrar                  CadastroPratoR POST
 /prato/mostrarTodos               MostrarPratos OPTIONS GET
 /prato/alterar/#PratoId           AlterarPrato OPTIONS PUT
+/prato/deletar/#PratoId           DeletarPrato OPTIONS DELETE
 |]
 
 instance YesodPersist Pagina where
@@ -127,7 +128,18 @@ putAlterarPrato cid = do
     prato <- requireJsonBody :: Handler Prato
     runDB $ update cid [PratoNome =. (pratoNome prato) ,
                         PratoValor =. (pratoValor prato)]
-    sendResponse (object [pack "resp" .= pack "Changed"])    
+    sendResponse (object [pack "resp" .= pack "Changed"])  
+    
+optionsDeletarPrato :: PratoId -> Handler ()
+optionsDeletarPrato cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "DELETE, OPTIONS"
+    
+deleteDeletarPrato :: PratoId -> Handler ()
+deleteDeletarPrato cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    runDB $ delete cid
+    sendResponse (object [pack "resp".= pack "Deleted"])    
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
