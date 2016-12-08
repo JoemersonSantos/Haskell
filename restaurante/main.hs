@@ -18,6 +18,10 @@ share[mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
         telefone Text
         deriving Show
     
+    Prato json
+        nome Text
+        valor Double
+        deriving Show    
     |]
 
 
@@ -27,6 +31,7 @@ mkYesod "Pagina" [parseRoutes|
 /cliente/mostrarTodos             MostrarClientes OPTIONS GET
 /cliente/alterar/#ClientesId      AlterarCliente OPTIONS PUT
 /cliente/deletar/#ClientesId      DeletarCliente OPTIONS DELETE
+/prato/cadastrar                  CadastroPratoR POST
 |]
 
 instance YesodPersist Pagina where
@@ -86,6 +91,17 @@ deleteDeletarCliente cid = do
     sendResponse (object [pack "resp".= pack "Deleted"])       
     
     ------------------------------------------------------------    
+optionsCadastroPratoR :: PratoId -> Handler ()
+optionsCadastroPratoR cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "POST, OPTIONS"
+
+postCadastroPratoR :: Handler ()
+postCadastroPratoR = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    prato <- requireJsonBody :: Handler Prato
+    runDB $ insert prato
+    sendResponse (object [pack "resp" .= pack "CREATED"])    
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
