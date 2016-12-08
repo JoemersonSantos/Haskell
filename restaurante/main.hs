@@ -32,6 +32,7 @@ mkYesod "Pagina" [parseRoutes|
 /cliente/alterar/#ClientesId      AlterarCliente OPTIONS PUT
 /cliente/deletar/#ClientesId      DeletarCliente OPTIONS DELETE
 /prato/cadastrar                  CadastroPratoR POST
+/prato/mostrarTodos               MostrarPratos OPTIONS GET
 |]
 
 instance YesodPersist Pagina where
@@ -102,6 +103,17 @@ postCadastroPratoR = do
     prato <- requireJsonBody :: Handler Prato
     runDB $ insert prato
     sendResponse (object [pack "resp" .= pack "CREATED"])    
+
+optionsMostrarPratos :: Handler ()
+optionsMostrarPratos = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "GET, OPTIONS"
+    
+getMostrarPratos :: Handler ()
+getMostrarPratos = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    prato <- runDB $ selectList [] [Asc PratoNome]
+    sendResponse (object["pratos: " .= fmap toJSON prato]) 
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
