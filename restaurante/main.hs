@@ -21,7 +21,13 @@ share[mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
     Prato json
         nome Text
         valor Double
-        deriving Show    
+        deriving Show  
+        
+    Bebida json
+        marca  Text
+        litros Text
+        preco  Double
+        deriving Show
     |]
 
 
@@ -35,6 +41,7 @@ mkYesod "Pagina" [parseRoutes|
 /prato/mostrarTodos               MostrarPratos OPTIONS GET
 /prato/alterar/#PratoId           AlterarPrato OPTIONS PUT
 /prato/deletar/#PratoId           DeletarPrato OPTIONS DELETE
+/bebida/cadastrar                 CadastroBebidaR POST
 |]
 
 instance YesodPersist Pagina where
@@ -139,7 +146,21 @@ deleteDeletarPrato :: PratoId -> Handler ()
 deleteDeletarPrato cid = do
     addHeader "Access-Control-Allow-Origin" "*"
     runDB $ delete cid
-    sendResponse (object [pack "resp".= pack "Deleted"])    
+    sendResponse (object [pack "resp".= pack "Deleted"]) 
+    
+    -----------------------------------------------------------------    
+     
+optionsCadastroBebidaR :: BebidaId -> Handler ()
+optionsCadastroBebidaR cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "POST, OPTIONS"
+        
+postCadastroBebidaR :: Handler ()
+postCadastroBebidaR = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    bebida <- requireJsonBody :: Handler Bebida
+    runDB $ insert bebida
+    sendResponse (object [pack "resp" .= pack "CREATED"])
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
