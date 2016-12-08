@@ -31,6 +31,10 @@ share[mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
         
     Marmita json
         tamanho Int
+        deriving Show 
+    
+    Entregador json  
+        nome Text
         deriving Show    
     |]
 
@@ -53,6 +57,7 @@ mkYesod "Pagina" [parseRoutes|
 /marmita/mostrarTodos             MostrarMarmitas OPTIONS GET
 /marmita/alterar/#MarmitaId       AlterarMarmita OPTIONS PUT
 /marmita/deletar/#MarmitaId       DeletarMarmita OPTIONS DELETE
+/entregador/cadastrar             CadastroEntregadorR POST
 |]
 
 instance YesodPersist Pagina where
@@ -257,6 +262,18 @@ deleteDeletarMarmita cid = do
     runDB $ delete cid
     sendResponse (object [pack "resp".= pack "Deleted"])
 -------------------------------------------------------------------    
+
+optionsCadastroEntregadorR :: EntregadorId -> Handler ()
+optionsCadastroEntregadorR cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "POST, OPTIONS"
+    
+postCadastroEntregadorR :: Handler ()
+postCadastroEntregadorR = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    entregador <- requireJsonBody :: Handler Entregador
+    runDB $ insert entregador
+    sendResponse (object [pack "resp" .= pack "CREATED"])  
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
