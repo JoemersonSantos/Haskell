@@ -44,7 +44,12 @@ share[mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
         bebida  BebidaId Maybe
         qtde    Int
         entregador EntregadorId Maybe    
-        deriving Show     
+        deriving Show
+        
+    Comentario json
+        cliente ClientesId Maybe
+        comentario Text
+        deriving Show    
     |]
 
 mkYesod "Pagina" [parseRoutes|
@@ -72,6 +77,7 @@ mkYesod "Pagina" [parseRoutes|
 /pedido/mostrarTodos              MostrarPedido OPTIONS GET
 /pedido/alterar/#PedidoId         AlterarPedido OPTIONS PUT
 /pedido/deletar/#PedidoId         DeletarPedido OPTIONS DELETE
+/comentarios/cadastrar            CadastroComentarioR POST
 |]
 
 instance YesodPersist Pagina where
@@ -374,7 +380,19 @@ deleteDeletarPedido cid = do
     addHeader "Access-Control-Allow-Origin" "*"
     runDB $ delete cid
     sendResponse (object [pack "resp".= pack "Deleted"])        
---------------------------------------------------------------------    
+-------------------------------------------------------------------- 
+
+optionsCadastroComentarioR :: ComentarioId -> Handler ()
+optionsCadastroComentarioR cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "POST, OPTIONS"
+    
+postCadastroComentarioR :: Handler ()
+postCadastroComentarioR = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    comentario <- requireJsonBody :: Handler Comentario
+    runDB $ insert comentario
+    sendResponse (object [pack "resp" .= pack "CREATED"])
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
