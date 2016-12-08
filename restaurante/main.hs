@@ -24,6 +24,7 @@ share[mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 
 mkYesod "Pagina" [parseRoutes|
 /cliente/cadastrar                CadastroCliente POST
+/cliente/mostrarTodos             MostrarClientes OPTIONS GET
 |]
 
 instance YesodPersist Pagina where
@@ -47,7 +48,16 @@ postCadastroCliente = do
     runDB $ insert cliente
     sendResponse (object [pack "resp" .= pack "CREATED"])
         
-
+optionsMostrarClientes :: Handler ()
+optionsMostrarClientes = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "GET, OPTIONS"
+        
+getMostrarClientes :: Handler ()
+getMostrarClientes = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    clientes <- runDB $ selectList [] [Asc ClientesNome]
+    sendResponse (object["clientes" .= fmap toJSON clientes])
 
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
