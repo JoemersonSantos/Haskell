@@ -59,6 +59,7 @@ mkYesod "Pagina" [parseRoutes|
 /marmita/deletar/#MarmitaId       DeletarMarmita OPTIONS DELETE
 /entregador/cadastrar             CadastroEntregadorR POST
 /entregador/mostrarTodos          MostrarEntregador OPTIONS GET
+/entregador/alterar/#EntregadorId AlterarEntregador OPTIONS PUT
 |]
 
 instance YesodPersist Pagina where
@@ -285,7 +286,19 @@ getMostrarEntregador :: Handler ()
 getMostrarEntregador = do
     addHeader "Access-Control-Allow-Origin" "*"
     entregador <- runDB $ selectList [] [Asc EntregadorNome]
-    sendResponse (object["entregadores: " .= fmap toJSON entregador])    
+    sendResponse (object["entregadores: " .= fmap toJSON entregador]) 
+    
+optionsAlterarEntregador :: EntregadorId -> Handler ()
+optionsAlterarEntregador cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "PUT, OPTIONS"
+
+putAlterarEntregador :: EntregadorId -> Handler ()
+putAlterarEntregador cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    entregador <- requireJsonBody :: Handler Entregador
+    runDB $ update cid [EntregadorNome =. entregadorNome entregador ]
+    sendResponse (object [pack "resp" .= pack "Changed"])    
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
