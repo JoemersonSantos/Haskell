@@ -78,6 +78,7 @@ mkYesod "Pagina" [parseRoutes|
 /pedido/alterar/#PedidoId         AlterarPedido OPTIONS PUT
 /pedido/deletar/#PedidoId         DeletarPedido OPTIONS DELETE
 /comentarios/cadastrar            CadastroComentarioR POST
+/comentarios/mostrarTodos         MostrarComentarios OPTIONS GET
 |]
 
 instance YesodPersist Pagina where
@@ -393,6 +394,17 @@ postCadastroComentarioR = do
     comentario <- requireJsonBody :: Handler Comentario
     runDB $ insert comentario
     sendResponse (object [pack "resp" .= pack "CREATED"])
+    
+optionsMostrarComentarios :: Handler ()
+optionsMostrarComentarios = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "GET, OPTIONS"
+    
+getMostrarComentarios :: Handler ()
+getMostrarComentarios = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    comentario <- runDB $ selectList [] [Asc ComentarioId]
+    sendResponse (object["comentarios: " .= fmap toJSON comentario])       
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
