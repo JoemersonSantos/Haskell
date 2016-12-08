@@ -47,7 +47,6 @@ share[mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
         deriving Show     
     |]
 
-
 mkYesod "Pagina" [parseRoutes|
 /cliente/cadastrar                CadastroCliente POST
 /cliente/mostrarTodos             MostrarClientes OPTIONS GET
@@ -71,6 +70,7 @@ mkYesod "Pagina" [parseRoutes|
 /entregador/deletar/#EntregadorId DeletarEntregador OPTIONS DELETE
 /pedido/cadastrar                 CadastroPedidoR POST
 /pedido/mostrarTodos              MostrarPedido OPTIONS GET
+/pedido/alterar/#PedidoId         AlterarPedido OPTIONS PUT
 |]
 
 instance YesodPersist Pagina where
@@ -344,7 +344,24 @@ getMostrarPedido :: Handler ()
 getMostrarPedido = do
     addHeader "Access-Control-Allow-Origin" "*"
     pedido <- runDB $ selectList [] [Asc PedidoId]
-    sendResponse (object["pedido: " .= fmap toJSON pedido])    
+    sendResponse (object["pedido: " .= fmap toJSON pedido]) 
+    
+optionsAlterarPedido :: PedidoId -> Handler ()
+optionsAlterarPedido cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "PUT, OPTIONS"
+
+putAlterarPedido :: PedidoId -> Handler ()
+putAlterarPedido cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    pedido <- requireJsonBody :: Handler Pedido
+    runDB $ update cid [PedidoCliente =. (pedidoCliente pedido),
+                        PedidoPrato =. (pedidoPrato pedido),
+                        PedidoMarmita =. (pedidoMarmita pedido),
+                        PedidoQtde =. (pedidoQtde pedido),
+                        PedidoBebida =. (pedidoBebida pedido),
+                        PedidoEntregador =. (pedidoEntregador pedido)]
+    sendResponse (object [pack "resp" .= pack "Changed"])    
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
