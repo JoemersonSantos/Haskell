@@ -71,6 +71,7 @@ mkYesod "Pagina" [parseRoutes|
 /pedido/cadastrar                 CadastroPedidoR POST
 /pedido/mostrarTodos              MostrarPedido OPTIONS GET
 /pedido/alterar/#PedidoId         AlterarPedido OPTIONS PUT
+/pedido/deletar/#PedidoId         DeletarPedido OPTIONS DELETE
 |]
 
 instance YesodPersist Pagina where
@@ -361,7 +362,19 @@ putAlterarPedido cid = do
                         PedidoQtde =. (pedidoQtde pedido),
                         PedidoBebida =. (pedidoBebida pedido),
                         PedidoEntregador =. (pedidoEntregador pedido)]
-    sendResponse (object [pack "resp" .= pack "Changed"])    
+    sendResponse (object [pack "resp" .= pack "Changed"]) 
+    
+optionsDeletarPedido :: PedidoId -> Handler ()
+optionsDeletarPedido cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "DELETE, OPTIONS"
+
+deleteDeletarPedido :: PedidoId -> Handler ()
+deleteDeletarPedido cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    runDB $ delete cid
+    sendResponse (object [pack "resp".= pack "Deleted"])        
+--------------------------------------------------------------------    
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
