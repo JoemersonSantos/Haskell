@@ -35,7 +35,16 @@ share[mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
     
     Entregador json  
         nome Text
-        deriving Show    
+        deriving Show
+        
+    Pedido json
+        cliente ClientesId Maybe
+        prato   PratoId Maybe
+        marmita MarmitaId Maybe
+        bebida  BebidaId Maybe
+        qtde    Int
+        entregador EntregadorId Maybe    
+        deriving Show     
     |]
 
 
@@ -61,6 +70,7 @@ mkYesod "Pagina" [parseRoutes|
 /entregador/mostrarTodos          MostrarEntregador OPTIONS GET
 /entregador/alterar/#EntregadorId AlterarEntregador OPTIONS PUT
 /entregador/deletar/#EntregadorId DeletarEntregador OPTIONS DELETE
+/pedido/cadastrar                 CadastroPedidoR POST
 |]
 
 instance YesodPersist Pagina where
@@ -311,7 +321,19 @@ deleteDeletarEntregador cid = do
     addHeader "Access-Control-Allow-Origin" "*"
     runDB $ delete cid
     sendResponse (object [pack "resp".= pack "Deleted"])
---------------------------------------------------------------------    
+--------------------------------------------------------------------
+
+optionsCadastroPedidoR :: PedidoId -> Handler ()
+optionsCadastroPedidoR cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "POST, OPTIONS"
+    
+postCadastroPedidoR :: Handler ()
+postCadastroPedidoR = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    pedido <- requireJsonBody :: Handler Pedido
+    runDB $ insert pedido
+    sendResponse (object [pack "resp" .= pack "CREATED"])
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
