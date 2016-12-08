@@ -51,6 +51,7 @@ mkYesod "Pagina" [parseRoutes|
 /bebida/deletar/#BebidaId         DeletarBebida OPTIONS DELETE
 /marmita/cadastrar                CadastroMarmitaR POST
 /marmita/mostrarTodos             MostrarMarmitas OPTIONS GET
+/marmita/alterar/#MarmitaId       AlterarMarmita OPTIONS PUT
 |]
 
 instance YesodPersist Pagina where
@@ -230,7 +231,19 @@ getMostrarMarmitas :: Handler ()
 getMostrarMarmitas = do
     addHeader "Access-Control-Allow-Origin" "*"
     marmita <- runDB $ selectList [] [Asc MarmitaId]
-    sendResponse (object["marmitas: " .= fmap toJSON marmita])    
+    sendResponse (object["marmitas: " .= fmap toJSON marmita]) 
+    
+optionsAlterarMarmita :: MarmitaId -> Handler ()
+optionsAlterarMarmita cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "PUT, OPTIONS"
+
+putAlterarMarmita :: MarmitaId -> Handler ()
+putAlterarMarmita cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    marmita <- requireJsonBody :: Handler Marmita
+    runDB $ update cid [MarmitaTamanho =. marmitaTamanho marmita ]
+    sendResponse (object [pack "resp" .= pack "Changed"])    
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
