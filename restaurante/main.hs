@@ -60,6 +60,7 @@ mkYesod "Pagina" [parseRoutes|
 /entregador/cadastrar             CadastroEntregadorR POST
 /entregador/mostrarTodos          MostrarEntregador OPTIONS GET
 /entregador/alterar/#EntregadorId AlterarEntregador OPTIONS PUT
+/entregador/deletar/#EntregadorId DeletarEntregador OPTIONS DELETE
 |]
 
 instance YesodPersist Pagina where
@@ -298,7 +299,19 @@ putAlterarEntregador cid = do
     addHeader "Access-Control-Allow-Origin" "*"
     entregador <- requireJsonBody :: Handler Entregador
     runDB $ update cid [EntregadorNome =. entregadorNome entregador ]
-    sendResponse (object [pack "resp" .= pack "Changed"])    
+    sendResponse (object [pack "resp" .= pack "Changed"])
+    
+optionsDeletarEntregador :: EntregadorId -> Handler ()
+optionsDeletarEntregador cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    addHeader "Access-Control-Allow-Methods" "DELETE, OPTIONS"
+
+deleteDeletarEntregador :: EntregadorId -> Handler ()
+deleteDeletarEntregador cid = do
+    addHeader "Access-Control-Allow-Origin" "*"
+    runDB $ delete cid
+    sendResponse (object [pack "resp".= pack "Deleted"])
+--------------------------------------------------------------------    
     
 connStr = "dbname=d646s1j3kc48hp host=ec2-54-243-203-143.compute-1.amazonaws.com user=rrwiwpzzopujxv password=SUtpmoQKuaw-kY4XxsRamfoNb1 port=5432"
 
